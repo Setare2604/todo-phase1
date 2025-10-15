@@ -13,6 +13,14 @@ dependencies = [
     "pydantic (>=2.12.2,<3.0.0)"
 ]
 
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+todo-cli = "todo_cli.cli.main:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
