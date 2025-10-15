@@ -1,7 +1,7 @@
 from datetime import datetime
-from .models import Project, Task, TaskStatus
-from storage.in_memory_storage import InMemoryStorage
-from config.settings import get_settings
+from todo_cli.core.models import Project, Task, TaskStatus
+from todo_cli.storage.in_memory_storage import InMemoryStorage
+from todo_cli.config.settings import get_settings
 
 settings = get_settings()
 

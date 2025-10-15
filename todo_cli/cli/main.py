@@ -3,9 +3,9 @@ ToDo List Manager - CLI Interface
 Main entry point for the ToDo List application
 """
 
-from core.services import ProjectService, TaskService
-from storage.in_memory_storage import InMemoryStorage
-from core.models import TaskStatus
+from todo_cli.core.services import ProjectService, TaskService
+from todo_cli.storage.in_memory_storage import InMemoryStorage
+from todo_cli.core.models import TaskStatus
 from datetime import datetime
 import re
 
