@@ -1,0 +1,28 @@
+[project]
+name = "todo-cli"
+version = "0.1.0"
+description = "ToDoList Phase1 - InMemory OOP CLI"
+authors = [
+    {name = "Setareh Hojjaty Shargh",email = "fhojjaty00@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer (>=0.19.2,<0.20.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "pydantic (>=2.12.2,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=8.4.2,<9.0.0)",
+    "black (>=25.9.0,<26.0.0)",
+    "isort (>=7.0.0,<8.0.0)",
+    "ruff (>=0.14.0,<0.15.0)",
+    "mypy (>=1.18.2,<2.0.0)"
+]
