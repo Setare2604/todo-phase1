@@ -27,7 +27,7 @@ class InMemoryStorage:
     def delete_project(self, project_id):
         if project_id in self._projects:
             del self._projects[project_id]
-            # Cascade Delete: حذف تمام تسک‌های مرتبط با این پروژه
+            # Cascade Delete
             task_ids_to_delete = [task_id for task_id, task in self._tasks.items() if task.project_id == project_id]
             for task_id in task_ids_to_delete:
                 del self._tasks[task_id]
@@ -57,3 +57,5 @@ class InMemoryStorage:
             del self._tasks[task_id]
             return True
         return False
+    def get_all_tasks(self):
+        return list(self._tasks.values())
