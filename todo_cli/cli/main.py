@@ -450,10 +450,10 @@ class ToDoListCLI:
         
         new_deadline = self.get_user_input(
             f"New deadline (current: '{task.deadline or 'Not set'}', press Enter to keep): ",
-            lambda x: self.validate_date(x) if x else task.deadline
+            lambda x: self.validate_date(x) if x else None
         )
-        if new_deadline is None and new_deadline != "":
-            return
+        if new_deadline is None:
+            new_deadline = task.deadline
         
         # Use original values if user pressed Enter
         new_title = new_title if new_title != task.title else task.title
@@ -462,7 +462,10 @@ class ToDoListCLI:
         
         try:
             success = self.task_service.edit_task(
-                task_id, new_title, new_description, new_deadline
+                task_id, 
+                new_title=new_title, 
+                new_description=new_description, 
+                new_deadline=new_deadline
             )
             if success:
                 print("✅ Task updated successfully!")

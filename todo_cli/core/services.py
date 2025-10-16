@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date, time
 from todo_cli.core.models import Project, Task, TaskStatus
 from todo_cli.storage.in_memory_storage import InMemoryStorage
 from todo_cli.config.settings import get_settings
@@ -116,7 +116,7 @@ class TaskService:
     def __init__(self, storage: InMemoryStorage):
         self.storage = storage
 
-    def create_task(self, project_id: int, title: str, description: str, deadline: datetime = None) -> Task:
+    def create_task(self, project_id: int, title: str, description: str, deadline: date = None) -> Task:
         """
         Creating a new task in a project
         
@@ -142,8 +142,14 @@ class TaskService:
         if not (0 < len(description) <= 150):
             raise ValueError("Task descriptions must be between 1 and 150 characters.")
 
-        if deadline and deadline < datetime.now():
-            raise ValueError("The deadline date cannot be in the past.")
+        if deadline:
+        # تبدیل date به datetime برای مقایسه درست
+            if isinstance(deadline, datetime):
+                deadline = deadline.date()
+
+            today = datetime.now().date()
+            if deadline < today:
+                raise ValueError("The deadline date cannot be in the past.")
 
         new_task = Task(0, project_id, title, description, TaskStatus.TODO, deadline)
         return self.storage.create_task(new_task)
@@ -171,7 +177,7 @@ class TaskService:
         return self.storage.update_task(task)
 
     def edit_task(self, task_id: int, new_title: str = None, new_description: str = None, 
-                 new_status: TaskStatus = None, new_deadline: datetime = None) -> bool:
+                 new_status: TaskStatus = None, new_deadline: date = None) -> bool:
         """
         Edit task information
         
@@ -201,13 +207,19 @@ class TaskService:
             task.description = new_description
 
         if new_status is not None:
-            if not isinstance(new_status, TaskStatus):
+            if isinstance(new_status, TaskStatus):
+                task.status = new_status
+            else:
                 raise ValueError("The status provided is not valid.")
-            task.status = new_status
 
         if new_deadline is not None:
-            if new_deadline < datetime.now():
+            if isinstance(new_deadline, datetime):
+                new_deadline = new_deadline.date()
+
+            today = datetime.now().date()
+            if new_deadline < today:
                 raise ValueError("The deadline date cannot be in the past.")
+
             task.deadline = new_deadline
 
         return self.storage.update_task(task)
