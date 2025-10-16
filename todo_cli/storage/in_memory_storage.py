@@ -1,5 +1,5 @@
 class InMemoryStorage:
-
+    """In-memory storage layer for managing projects and tasks."""
     def __init__(self):
         self._projects = {}  # {project_id: Project object}
         self._tasks = {}     # {task_id: Task object}

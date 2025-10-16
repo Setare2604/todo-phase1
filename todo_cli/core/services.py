@@ -143,7 +143,7 @@ class TaskService:
             raise ValueError("Task descriptions must be between 1 and 150 characters.")
 
         if deadline:
-        # تبدیل date به datetime برای مقایسه درست
+            
             if isinstance(deadline, datetime):
                 deadline = deadline.date()
 
