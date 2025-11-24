@@ -5,18 +5,28 @@ Main entry point for the ToDo List application
 
 from todo_cli.core.services import ProjectService, TaskService
 from todo_cli.storage.in_memory_storage import InMemoryStorage
+from todo_cli.storage.db_storage import DBStorage
 from todo_cli.core.models import TaskStatus
 from datetime import datetime
 import re
-
+import os
 
 class ToDoListCLI:
     """Command Line Interface for ToDo List Management"""
     
-    def __init__(self):
-        self.storage = InMemoryStorage()
+    def __init__(self, storage=None):
+        if storage is not None:
+            self.storage = storage
+        else:
+            storage_choice = os.getenv("STORAGE", "memory")
+            if storage_choice == "db":
+                self.storage = DBStorage()
+            else:
+                self.storage = InMemoryStorage()
+
         self.project_service = ProjectService(self.storage)
         self.task_service = TaskService(self.storage)
+
         self.current_project_id = None
     
     def display_main_menu(self):
