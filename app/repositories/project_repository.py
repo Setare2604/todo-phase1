@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.project import Project
 
@@ -13,8 +13,11 @@ class ProjectRepository:
         self.db.refresh(p)
         return p
 
-    def get(self, project_id: int) -> Project | None:
+    def get(self, project_id: int) -> Optional[Project]:
         return self.db.query(Project).filter(Project.id == project_id).first()
+
+    def get_by_name(self, name: str) -> Optional[Project]:
+        return self.db.query(Project).filter(Project.name == name).first()
 
     def list(self) -> List[Project]:
         return self.db.query(Project).all()
