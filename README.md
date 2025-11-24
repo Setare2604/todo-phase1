@@ -134,3 +134,14 @@ Main advantages:
 - Simple and consistent installation with `poetry install`
 
 ---
+
+# 📝 ToDo List Manager (Phase 2 - Relational Database)
+docker compose up -d
+# Setting DATABASE_URL in .env (example)
+# DATABASE_URL=postgresql+psycopg2://todo_user:todo_pass@localhost:5432/todo_db
+poetry run alembic upgrade head
+export STORAGE=db
+poetry run python -m todo_cli.cli.main
+
+## Tests
+poetry run pytest
