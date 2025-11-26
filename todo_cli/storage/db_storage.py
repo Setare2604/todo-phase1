@@ -6,9 +6,13 @@ from todo_cli.core.models import Project as DomainProject, Task as DomainTask, T
 from datetime import datetime
 
 class DBStorage:
-    def __init__(self):
-        # یک session یک‌بار ساخته می‌شود و تا زمان بسته شدن نگه‌داری می‌گردد
-        self.db = SessionLocal()
+    def __init__(self, session=None):
+        if session is None:
+            self.db = SessionLocal()
+            self._close_on_exit = True
+        else:
+            self.db = session
+            self._close_on_exit = False
 
     def close(self):
         """Close DB session (call when shutting down/tests)"""
