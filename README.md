@@ -143,5 +143,5 @@ poetry run alembic upgrade head
 export STORAGE=db
 poetry run python -m todo_cli.cli.main
 
-## Tests
+## Test
 poetry run pytest
