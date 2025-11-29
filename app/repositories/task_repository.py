@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.models.task import Task, StatusEnum
+from datetime import datetime
 
 class TaskRepository:
     def __init__(self, db: Session):
@@ -23,10 +24,19 @@ class TaskRepository:
         t = self.get(task_id)
         if not t:
             return None
+
         t.status = new_status
+
+
+        if new_status == StatusEnum.done:
+            t.closed_at = datetime.utcnow()
+        else:
+            t.closed_at = None
+
         self.db.commit()
         self.db.refresh(t)
         return t
+
 
     def update(self, task: Task) -> bool:
         if not self.get(task.id):

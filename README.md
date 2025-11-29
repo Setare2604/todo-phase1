@@ -145,3 +145,8 @@ poetry run python -m todo_cli.cli.main
 
 ## Test
 poetry run pytest
+
+## CLI Deprecation Notice (Phase 3)
+Starting from Phase 3, the CLI interface is deprecated.
+All features are now available via the FastAPI Web API.
+Please use the API endpoints and Swagger UI at `/docs`.
