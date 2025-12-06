@@ -28,7 +28,7 @@ class TaskRepository:
         t.status = new_status
 
 
-        if new_status == StatusEnum.done:
+        if new_status == StatusEnum.DONE:
             t.closed_at = datetime.utcnow()
         else:
             t.closed_at = None
