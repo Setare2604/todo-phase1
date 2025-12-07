@@ -47,3 +47,37 @@ class TaskService:
             raise TaskNotFound("Task not found")
 
         return self.task_repo.change_status(task_id, status_enum)
+    
+    def update_task(self, task_id: int, data: dict) -> Task:
+        task = self.task_repo.get(task_id)
+        if task is None:
+            raise TaskNotFound("Task not found")
+
+        if "title" in data and data["title"] is not None:
+            title = data["title"].strip()
+            if not (1 <= len(title) <= 100):
+                raise ValidationError("Task title must be 1..100 characters")
+            task.title = title
+
+        if "description" in data and data["description"] is not None:
+            task.description = data["description"]
+
+        if "deadline" in data:
+            task.deadline = data["deadline"]
+
+        if "status" in data and data["status"] is not None:
+            try:
+                task.status = StatusEnum(data["status"])
+            except ValueError:
+                raise ValidationError("Invalid status")
+
+        ok = self.task_repo.update(task)
+        if not ok:
+            raise TaskNotFound("Task not found")
+
+        return self.task_repo.get(task_id)
+
+    def delete_task(self, task_id: int) -> None:
+        ok = self.task_repo.delete(task_id)
+        if not ok:
+            raise TaskNotFound("Task not found")

@@ -145,3 +145,28 @@ poetry run python -m todo_cli.cli.main
 
 ## Test
 poetry run pytest
+
+## CLI Deprecation Notice (Phase 3)
+Starting from Phase 3, the CLI interface is deprecated.
+All features are now available via the FastAPI Web API.
+Please use the API endpoints and Swagger UI at `/docs`.
+
+# ToDoList Project — Phase 3 (Web API)
+
+This repository contains the ToDoList application developed through three phases:
+1. **Phase 1:** In-memory OOP ToDoList  
+2. **Phase 2:** RDB-backed ToDoList using SQLAlchemy + Alembic  
+3. **Phase 3:** FastAPI Web API (current phase)
+
+---
+
+## Phase 3 Overview
+
+In Phase 3, the CLI application has been migrated to a **RESTful Web API** using **FastAPI**.  
+The layered architecture is preserved:
+
+- **Controllers (Routers):** Handle HTTP requests/responses
+- **Services:** Business logic
+- **Repositories:** Database operations (SQLAlchemy ORM)
+
+Swagger/OpenAPI documentation is available automatically at:

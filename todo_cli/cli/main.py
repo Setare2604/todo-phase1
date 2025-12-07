@@ -2,6 +2,7 @@
 ToDo List Manager - CLI Interface
 Main entry point for the ToDo List application
 """
+print("⚠️ CLI is deprecated starting Phase 3. Please use the FastAPI Web API instead.")
 
 from todo_cli.core.services import ProjectService, TaskService
 from todo_cli.storage.in_memory_storage import InMemoryStorage
