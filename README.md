@@ -192,29 +192,28 @@ poetry run python -m app.cli.console
 ## 8) نحوه اجرای هر فاز (Runbook)
 
 ### فاز ۱
-```bash
 poetry run python -m todo_cli.cli.main
 
 
 storage پیش‌فرض in-memory است.
 
-فاز ۲
+### فاز ۲
 docker compose up -d
 poetry run alembic upgrade head
 STORAGE=db
 poetry run python -m todo_cli.cli.main
 
-فاز ۲ تکمیلی (Autoclose)
+### فاز ۲ تکمیلی (Autoclose)
 poetry run python -m app.cli.console
 
-فاز ۳
+### فاز ۳
 poetry run uvicorn app.main:app --reload
 
 
 Swagger:
 http://127.0.0.1:8000/docs
 
-فاز ۴
+### فاز ۴
 
 اجرای API
 
