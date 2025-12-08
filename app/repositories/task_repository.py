@@ -52,3 +52,12 @@ class TaskRepository:
         self.db.delete(t)
         self.db.commit()
         return True
+    def list_overdue_open_tasks(self) -> List[Task]:
+        now = datetime.utcnow()
+        return (
+            self.db.query(Task)
+            .filter(Task.deadline.isnot(None))
+            .filter(Task.deadline < now)
+            .filter(Task.status != StatusEnum.DONE)
+            .all()
+        )
