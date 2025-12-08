@@ -1,172 +1,235 @@
-# 📝 ToDo List Manager (Phase 1 - In-Memory Storage)
+# گزارش پروژه ToDoList (فازهای ۱ تا ۴)
 
-This project is **Phase 1** of the ToDo List Management System, implemented in **Python** using **Object-Oriented Programming (OOP)** and **In-Memory Storage**.  
-The goal of this phase is to build a modular, layered, and clean foundation of the system, ready for future phases that will include database persistence and web API integration.
+## 1) معرفی پروژه و هدف
+پروژه‌ی ToDoList یک سیستم مدیریت پروژه و وظیفه (Task) است که کاربر می‌تواند پروژه‌ها را ایجاد کند و برای هر پروژه چندین تسک با وضعیت‌های مختلف تعریف نماید. هر تسک دارای عنوان، توضیح، وضعیت (todo / doing / done) و یک deadline اختیاری است. هدف این پروژه پیاده‌سازی مرحله‌ای سیستم با حفظ اصول OOP، معماری لایه‌ای، ذخیره‌سازی پایدار و ارائه‌ی API برای دسترسی از طریق HTTP است.
 
----
-
-## 🎯 Main Objectives and Features
-
-- Modular and layered architecture (Config, Core, Storage, CLI)
-- Follows **Clean Code** and **PEP8** conventions
-- Implements all core project and task management features
-- Uses **dotenv** for configuration via `.env` file
-- Ready for **Persistence Layer** in later phases
-- Dependency management via **Poetry**
+فازهای پروژه به شکل زیر طراحی و پیاده‌سازی شده‌اند:
+- **فاز ۱:** CLI با ذخیره‌سازی در حافظه (In-Memory) و قوانین دامنه
+- **فاز ۲:** ذخیره‌سازی پایدار با PostgreSQL + Alembic Migration
+- **فاز ۲ تکمیلی:** Scheduled Task برای بستن خودکار تسک‌های overdue
+- **فاز ۳:** FastAPI Web API مطابق RESTful design
+- **فاز ۴:** تست End-to-End با Postman
 
 ---
 
-## 🧩 Project Structure
+## 2) معماری و ساختار کلی پروژه
+ساختار پروژه بر اساس معماری لایه‌ای طراحی شده است تا وابستگی‌ها جدا و مسئولیت هر بخش مشخص باشد. این معماری در فازهای بعدی حفظ شده و فقط لایه Persistence گسترش یافته است.
 
-```
-todo_cli/
-│
-├── cli/                  # Command Line Interface (CLI)
-│   └── main.py
-│
-├── core/                 # Business Logic Layer
-│   ├── models.py
-│   └── services.py
-│
-├── storage/              # In-Memory Data Storage
-│   └── in_memory_storage.py
-│
-├── config/               # Configuration and environment variables
-│   └── settings.py
-│
-├── tests/                # Unit Tests (optional)
-│
-├── .env                  # Environment variables
-├── .env.example          # Example configuration file
-├── pyproject.toml        # Poetry configuration file
-├── poetry.lock
-└── README.md
-```
+### لایه‌ها
+1) **Domain/Core (todo_cli/core)**
+   - مدل‌های اصلی دامنه: `Project`, `Task`, `TaskStatus`
+   - مستقل از نوع ذخیره‌سازی و رابط کاربری
+
+2) **Service Layer (todo_cli/core/services + app/services)**
+   - پیاده‌سازی قوانین کسب‌وکار: validationها، unique بودن، محدودیت تعداد، تغییر وضعیت و …
+   - هیچ کد مستقیم دیتابیس در این لایه وجود ندارد.
+
+3) **Persistence / Storage / Repository**
+   - **InMemoryStorage** برای فاز ۱  
+   - **DBStorage + Repositories + ORM Models** برای فاز ۲ و ۳  
+   - وظیفه این لایه فقط خواندن/نوشتن داده است.
+
+4) **Controller / Router (app/controllers)**
+   - مرز ارتباط HTTP و تبدیل خطاهای دامنه به status code مناسب
+
+5) **Schema Layer (app/schemas)**
+   - تعریف قرارداد ورودی/خروجی API با Pydantic
 
 ---
 
-## ⚙️ How to Run the Project
+## 3) فاز ۱ — CLI + In-Memory (OOP)
+در این فاز یک CLI تعاملی پیاده‌سازی شده که تمام داده‌ها را در حافظه نگهداری می‌کند. مهم‌ترین نکته در این فاز رعایت اصول OOP و پیاده‌سازی قوانین دامنه بود.
 
-### 1️⃣ Install Dependencies
-Make sure Poetry is installed, then run:
+### مهم‌ترین قوانین دامنه در فاز ۱:
+- **Unique بودن نام پروژه:** دو پروژه با نام یکسان مجاز نیست.
+- **محدودیت تعداد پروژه و تسک (از env):**
+  - `MAX_NUMBER_OF_PROJECTS`
+  - `MAX_NUMBER_OF_TASKS_PER_PROJECT`
+- **اعتبار deadline:** اگر وارد شود باید تاریخ معتبر باشد.
+- **وضعیت تسک فقط یکی از todo / doing / done است.**
+- **Cascade delete در حافظه:** با حذف پروژه، تمام تسک‌های آن نیز حذف می‌شوند.
+
+### فایل‌های اصلی فاز ۱:
+- `todo_cli/core/models.py` → تعریف مدل‌های دامنه و Enum وضعیت
+- `todo_cli/core/services.py` → قوانین دامنه و منطق پروژه/تسک
+- `todo_cli/storage/in_memory_storage.py` → ذخیره‌سازی در RAM
+- `todo_cli/cli/main.py` → رابط CLI و منوها
+- `todo_cli/tests/*` → تست منطق سرویس و storage
+
+### سناریوی تست فاز ۱:
+1) ساخت پروژه جدید
+2) افزودن چند تسک به پروژه
+3) تغییر وضعیت تسک‌ها
+4) حذف پروژه و مشاهده حذف شدن تسک‌ها
+
+---
+
+## 4) فاز ۲ — CLI + RDB (PostgreSQL) + Migration
+در این فاز ذخیره‌سازی پروژه از حافظه به دیتابیس PostgreSQL منتقل شد تا داده‌ها پایدار باشند و در اجرای مجدد برنامه از بین نروند.
+
+### علت استفاده از دیتابیس
+- **ماندگاری داده** بین اجراهای مختلف
+- **آمادگی برای API و توسعه‌های آینده**
+- ایجاد امکان گزارش‌گیری و queryهای ساختاریافته
+
+### ORM Models
+در پوشه `app/models` دو مدل ORM ایجاد شده است:
+- `Project` → جدول `projects`
+- `Task` → جدول `tasks`
+  
+ویژگی‌های مهم:
+- رابطه **One-to-Many**: هر پروژه چند تسک دارد.
+- FK در Task با `ondelete="CASCADE"`
+- cascade در relationship نیز فعال است تا حذف پروژه باعث حذف تسک‌ها شود.
+- ذخیره‌ی وضعیت در DB با Enum و ثبت `closed_at` هنگام بسته شدن.
+
+### Alembic Migration
+برای ساخت و نسخه‌بندی دیتابیس از Alembic استفاده شد:
+- تنظیمات در `alembic.ini`
+- فایل اتصال Alembic به ORM در `alembic/env.py`
+- migrationها در `alembic/versions/` نگهداری می‌شوند.
+  
+مهاجرت‌ها شامل `upgrade()` و `downgrade()` هستند تا تغییرات DB قابل اعمال/بازگشت باشد.
+
+### فایل‌های اصلی فاز ۲
+- `app/db/base.py` → Base مشترک ORM
+- `app/db/session.py` → ساخت engine و SessionLocal
+- `app/models/project.py`, `app/models/task.py` → مدل‌های ORM
+- `app/repositories/*` → CRUD دیتابیس
+- `todo_cli/storage/db_storage.py` → اتصال CLI به DB و مپ بین Domain و ORM
+
+### نشانه موفقیت فاز ۲
+بعد از ساخت پروژه و تسک در CLI، خروج از برنامه و اجرای مجدد، داده‌ها باید باقی بمانند.
+
+---
+
+## 5) فاز ۲ تکمیلی — Scheduled Task (Autoclose Overdue)
+در این بخش یک تسک زمان‌بندی‌شده اضافه شد تا وظایف overdue به صورت خودکار بسته شوند.
+
+### نیاز پروژه
+اگر:
+- `deadline < now`
+- و `status != done`
+  
+سیستم باید:
+- status تسک را `done` کند
+- مقدار `closed_at` را زمان فعلی ثبت نماید.
+
+### محل پیاده‌سازی در معماری
+- **Repository:**  
+  `TaskRepository.list_overdue_open_tasks()`  
+  برای پیدا کردن تسک‌های overdue و باز
+
+- **Command:**  
+  `app/commands/autoclose_overdue.py`  
+  شامل منطق بستن خودکار و commit تغییرات
+
+- **Runner / Scheduler:**  
+  `app/cli/console.py`  
+  اجرای دوره‌ای job با کتابخانه `schedule`
+
+### سناریوی تست Scheduled Task
+1) ساخت تسک با deadline گذشته (مثلاً 2020)
+2) اجرای scheduler:
+poetry run python -m app.cli.console
+
+3) مشاهده لاگ:
+
+
+[autoclose] closed 1 overdue tasks
+
+4) گرفتن خروجی API و دیدن:
+- `status = done`
+- `closed_at` مقدار دارد.
+
+---
+
+## 6) فاز ۳ — FastAPI Web API
+در این فاز قابلیت‌های پروژه به صورت REST API روی FastAPI ارائه شدند.
+
+### طراحی RESTful
+- همه endpointها در کنترلرها تعریف شدند:
+- `app/controllers/project_controller.py`
+- `app/controllers/task_controller.py`
+- تسک‌ها **nested** زیر پروژه‌ها هستند:
+`/projects/{project_id}/tasks/...`
+
+### Schemaهای Pydantic
+در `app/schemas` قرارداد ورودی/خروجی تعریف شد:
+- `ProjectCreate`, `ProjectUpdate`, `ProjectOut`
+- `TaskCreate`, `TaskUpdate`, `TaskOut`
+- با `from_attributes=True` ORMها مستقیم serialize می‌شوند.
+
+### Error Handling
+- خطاهای دامنه (ValidationError/NotFound) در سرویس رخ می‌دهند
+- کنترلرها آن‌ها را به HTTP وضعیت مناسب تبدیل می‌کنند:
+- 400 برای validation
+- 404 برای not found
+- خطاهای Pydantic → 422
+
+### نشانه موفقیت فاز ۳
+- Swagger در `/docs` بالا می‌آید
+- endpointهای CRUD و PATCH قابل تست هستند.
+
+---
+
+## 7) فاز ۴ — تست با Postman
+در این فاز تمام endpointها به صورت End-to-End با Postman تست شدند.
+
+### موارد انجام‌شده
+- ساخت environment با `base_url`
+- ساخت collection شامل:
+- CRUD پروژه‌ها
+- CRUD تسک‌ها
+- PATCH تغییر status
+- تست success و error:
+- deadline نامعتبر → 422
+- status نامعتبر → 400
+- پروژه/تسک ناموجود → 404
+
+---
+
+## 8) نحوه اجرای هر فاز (Runbook)
+
+### فاز ۱
 ```bash
-poetry install
-```
-
-### 2️⃣ Run the Application
-```bash
-poetry run python todo_cli/cli/main.py
-```
-
-### 3️⃣ Environment Variables
-Define environment variables in `.env`:
-```
-MAX_NUMBER_OF_PROJECTS=10
-MAX_NUMBER_OF_TASKS_PER_PROJECT=50
-```
-
----
-
-## 🧠 Implemented Features (Phase 1)
-
-| # | Feature | Description |
-|---|----------|-------------|
-| 1️⃣ | Create Project | Add a new project with name and description validation |
-| 2️⃣ | Edit Project | Update project name and description |
-| 3️⃣ | Delete Project | Delete a project and all its tasks (Cascade Delete) |
-| 4️⃣ | Add Task | Add a new task with deadline validation |
-| 5️⃣ | Edit Task | Modify title, description, and deadline |
-| 6️⃣ | Change Task Status | Switch between todo / doing / done |
-| 7️⃣ | Delete Task | Remove a specific task |
-| 8️⃣ | List Projects | Show all projects with task summary |
-| 9️⃣ | List Tasks in Project | Display all tasks within a selected project |
-
----
-
-## 🧩 Architecture Overview
-
-- **In-Memory Storage:** All data is stored temporarily in memory (no persistence yet).  
-- **Core Layer:** Defines main business logic and data models (`Project`, `Task`, etc.).  
-- **CLI Layer:** Handles user interaction through command-line interface.  
-- **Config Layer:** Loads environment configurations using `.env`.
-
-This layered structure ensures that persistence or API layers can be added later without modifying the core logic.
-
----
-
-## 🧭 Git Branching Policy
-
-| Branch | Description |
-|--------|--------------|
-| `main` | Stable production-ready branch |
-| `develop` | Active development branch |
-| `feature/*` | Used for implementing new features |
-
-Example workflow:
-
-```bash
-# Start from develop branch
-git checkout develop
-
-# Create a new feature branch
-git checkout -b feature/add-task
-
-# Add and commit changes
-git add .
-git commit -m "feat: add task creation feature"
-
-# Push feature branch to GitHub
-git push origin feature/add-task
-
-# Open Pull Request (feature → develop)
-# After review, merge develop → main for stable release
-```
-
----
-
-## 📦 Dependency Management with Poetry
-
-Poetry is used as a modern dependency and project manager for Python.  
-Main advantages:
-- Automatically creates a virtual environment per project  
-- Tracks dependencies in `pyproject.toml`  
-- Runs the project easily using `poetry run`  
-- Simple and consistent installation with `poetry install`
-
----
-
-# 📝 ToDo List Manager (Phase 2 - Relational Database)
-docker compose up -d
-# Setting DATABASE_URL in .env (example)
-# DATABASE_URL=postgresql+psycopg2://todo_user:todo_pass@localhost:5432/todo_db
-poetry run alembic upgrade head
-export STORAGE=db
 poetry run python -m todo_cli.cli.main
 
-## Test
-poetry run pytest
 
-## CLI Deprecation Notice (Phase 3)
-Starting from Phase 3, the CLI interface is deprecated.
-All features are now available via the FastAPI Web API.
-Please use the API endpoints and Swagger UI at `/docs`.
+storage پیش‌فرض in-memory است.
 
-# ToDoList Project — Phase 3 (Web API)
+فاز ۲
+docker compose up -d
+poetry run alembic upgrade head
+STORAGE=db
+poetry run python -m todo_cli.cli.main
 
-This repository contains the ToDoList application developed through three phases:
-1. **Phase 1:** In-memory OOP ToDoList  
-2. **Phase 2:** RDB-backed ToDoList using SQLAlchemy + Alembic  
-3. **Phase 3:** FastAPI Web API (current phase)
+فاز ۲ تکمیلی (Autoclose)
+poetry run python -m app.cli.console
 
----
+فاز ۳
+poetry run uvicorn app.main:app --reload
 
-## Phase 3 Overview
 
-In Phase 3, the CLI application has been migrated to a **RESTful Web API** using **FastAPI**.  
-The layered architecture is preserved:
+Swagger:
+http://127.0.0.1:8000/docs
 
-- **Controllers (Routers):** Handle HTTP requests/responses
-- **Services:** Business logic
-- **Repositories:** Database operations (SQLAlchemy ORM)
+فاز ۴
 
-Swagger/OpenAPI documentation is available automatically at:
+اجرای API
+
+تست همه endpointها در Postman
+
+9) جمع‌بندی و پیشنهاد توسعه
+
+پروژه تمام نیازهای فازهای ۱ تا ۴ را پیاده‌سازی کرده است. استفاده از معماری لایه‌ای باعث شد توسعه در فازهای بعد بدون تغییر در دامنه اصلی انجام شود.
+
+پیشنهاد برای نسخه‌های بعدی:
+
+اضافه‌کردن pagination و filter برای لیست‌ها
+
+اضافه‌کردن PATCH عمومی برای تسک
+
+تبدیل Scheduled Task به cron job در محیط production
+
+اضافه‌کردن authentication ساده برای API
